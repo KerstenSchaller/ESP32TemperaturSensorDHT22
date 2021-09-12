@@ -11,19 +11,16 @@ class SensorDHT22
 {
 private:
     DHT dht;
+public:
+
+    SensorDHT22(uint8_t pin);
     struct SensorData
     {
         float temperature;
         float humidity;
         float heatIndexCelsius;
-        uint8_t valid;
+        bool valid;
     };
-    
-
-public:
-
-    SensorDHT22(uint8_t pin);
-
 
     SensorData readValues();
 };
