@@ -1,29 +1,11 @@
-/*
-
-#include "Arduino.h"
-
-
-void setup() 
-{
-  //sensor = SensorDHT22(4);
-  Serial.begin(115200);
-}
-
-void loop() 
-{
-  // Wait a few seconds between measurements.
-  delay(2000);
-  sensor.readValues();
-
-}
-
-*/
 
 #include <ESPmDNS.h>
 #include <WiFi.h>
+
 #include <ESPAsyncWebServer.h>
 
 #include "Sensor.hpp"
+#include "udp_sender.h"
 
 #include "Credentials.h"
   
@@ -32,15 +14,26 @@ int requestCounter = 0;
 
 SensorDHT22 sensor(4);
 
+SensorDHT22::SensorData data;
+
+  bool datavalid = false;
+  int countAttempts = 0;
+
+void sendData()
+{
+  data = sensor.readValues();
+  if (data.valid)
+  {
+    String text = "t," + String(data.temperature) + ",h," +  String(data.humidity);
+    sendBroadCast(text.c_str());
+  }
+
+}
 
 void requestCallback(AsyncWebServerRequest *request)
 {
   Serial.println("Received http get");
-  SensorDHT22::SensorData data;
-
-
-  bool datavalid = false;
-  int countAttempts = 0;
+  // Try to read values from sensor up to 15 times
   while(!datavalid && (countAttempts < 15))
   {
     countAttempts++;
@@ -48,9 +41,8 @@ void requestCallback(AsyncWebServerRequest *request)
     data = sensor.readValues();
     datavalid = data.valid;
   }
-/*  
-data = sensor.readValues();
-*/
+
+  
 
   String returnText = (data.valid ? "Temperatur: " + String(data.temperature)+ "C   Luftfeuchte: " + String(data.humidity) + "%" : "Could not read from sensor");
   
@@ -61,8 +53,8 @@ data = sensor.readValues();
 
 void setup(){
   Serial.begin(115200);
-  
-  WiFi.begin(ssid, password);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pwd);
   WiFi.setHostname("node1");
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -74,16 +66,15 @@ void setup(){
      Serial.println("Error starting mDNS");
      return;
   }
-
   
-  Serial.println(WiFi.localIP());
-  
+  start();
+    
   server.on("/", HTTP_GET, requestCallback);
-  
   server.begin();
-
-  // Add service to MDNS-SD
-  //MDNS.addService("http", "tcp", 80);
 }
   
-void loop(){}
+void loop()
+{
+  sendData();
+  //delay(1000);
+}
