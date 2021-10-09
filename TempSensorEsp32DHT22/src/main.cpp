@@ -1,6 +1,7 @@
 
 #include <ESPmDNS.h>
 #include <WiFi.h>
+#include "SystemTime.h"
 
 #include <ESPAsyncWebServer.h>
 
@@ -8,7 +9,9 @@
 #include "udp_sender.h"
 
 #include "Credentials.h"
-  
+//#include "Deepsleep.h"
+
+
 AsyncWebServer server(80);
 int requestCounter = 0;
 
@@ -42,8 +45,6 @@ void requestCallback(AsyncWebServerRequest *request)
     datavalid = data.valid;
   }
 
-  
-
   String returnText = (data.valid ? "Temperatur: " + String(data.temperature)+ "C   Luftfeuchte: " + String(data.humidity) + "%" : "Could not read from sensor");
   
   Serial.println("Answering with: " + returnText);
@@ -53,6 +54,7 @@ void requestCallback(AsyncWebServerRequest *request)
 
 void setup(){
   Serial.begin(115200);
+    
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pwd);
   WiFi.setHostname("node1");
@@ -60,7 +62,7 @@ void setup(){
     delay(1000);
     Serial.println("Connecting to WiFi..");
   }
- 
+  Serial.println("Connected: " + WiFi.localIP() );
  
   if(!MDNS.begin("esp32")) {
      Serial.println("Error starting mDNS");
@@ -71,10 +73,12 @@ void setup(){
     
   server.on("/", HTTP_GET, requestCallback);
   server.begin();
+
 }
   
 void loop()
 {
-  sendData();
-  //delay(1000);
+  //SystemTime::get();
+  delay(1000);
+  //sendData();
 }
