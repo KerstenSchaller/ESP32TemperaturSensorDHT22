@@ -1,0 +1,8 @@
+/home/ks/Desktop/gitRepos/ESP32TemperaturSensorDHT22/LinuxServer/build/CMakeFiles/rebuild_cache.dir
+/home/ks/Desktop/gitRepos/ESP32TemperaturSensorDHT22/LinuxServer/build/CMakeFiles/edit_cache.dir
+/home/ks/Desktop/gitRepos/ESP32TemperaturSensorDHT22/LinuxServer/build/IOTServer/CMakeFiles/rebuild_cache.dir
+/home/ks/Desktop/gitRepos/ESP32TemperaturSensorDHT22/LinuxServer/build/IOTServer/CMakeFiles/edit_cache.dir
+/home/ks/Desktop/gitRepos/ESP32TemperaturSensorDHT22/LinuxServer/build/IOTServer/CMakeFiles/IOTServer.dir
+/home/ks/Desktop/gitRepos/ESP32TemperaturSensorDHT22/LinuxServer/build/IOTTestClient/CMakeFiles/rebuild_cache.dir
+/home/ks/Desktop/gitRepos/ESP32TemperaturSensorDHT22/LinuxServer/build/IOTTestClient/CMakeFiles/edit_cache.dir
+/home/ks/Desktop/gitRepos/ESP32TemperaturSensorDHT22/LinuxServer/build/IOTTestClient/CMakeFiles/IOTTestClient.dir

@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ks/Desktop/gitRepos/ESP32TemperaturSensorDHT22/LinuxServer/IOTTestClient/main.cpp
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+arpa/inet.h
+-
+sys/socket.h
+-
+chrono
+-
+thread
+-
+
