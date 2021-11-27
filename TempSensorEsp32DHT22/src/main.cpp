@@ -34,11 +34,11 @@ void setup()
   WifiHandler::ConnectWifi();
   WifiHandler::setUpmDNS("esp32");
   //UDPHANDLER::start();
-  Webserver::start();
+  //Webserver::start(); // now in controlprotokol.cpp
   TemperaturHandler::update();
   TimerHandler::setup(timerCallback);
   SystemTime::get();
-  Controlprotocol::setup();
+  Controlprotocol::setup("Wohnzimmer");
 
   Controlprotocol::discoverOthers();
 }

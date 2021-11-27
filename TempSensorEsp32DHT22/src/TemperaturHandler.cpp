@@ -18,6 +18,12 @@ namespace TemperaturHandler
     {
         return data.heatIndexCelsius;
     }
+
+    SensorDHT22::SensorData getSensorData()
+    {
+        return data;
+    }
+    
     void update()
     {
         data = sensor.readValues();

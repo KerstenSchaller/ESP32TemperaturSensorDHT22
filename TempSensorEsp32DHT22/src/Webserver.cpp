@@ -5,8 +5,6 @@
 #include <ESPAsyncWebServer.h>
 #include "TemperaturHandler.hpp"
 
-
-
 namespace Webserver
 {
 
@@ -40,5 +38,10 @@ void startWebserver()
     void start()
     {   
         startWebserver();
+    }
+
+    void end()
+    {
+        server.end();       
     }
 }

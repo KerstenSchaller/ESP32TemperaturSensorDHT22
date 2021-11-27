@@ -25,6 +25,11 @@ namespace UDPHANDLER
         audp.broadcast(text, len);
     }
 
+    void sendUnicast(IPAddress ip, uint8_t * text, int len)
+    {
+        audp.writeTo(text, len, ip, udpPort);
+    }
+    
 
     void (*callback)(AsyncUDPPacket packet);
 

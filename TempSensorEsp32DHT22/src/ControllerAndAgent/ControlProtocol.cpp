@@ -3,6 +3,8 @@
 #include "AsyncUDP.h"
 #include "TimerHandler.hpp"
 #include "RemoteSensor.hpp"
+#include "Webserver.hpp"
+#include "TemperaturHandler.hpp"
 
 #define BUFSIZE 512
 
@@ -24,7 +26,7 @@ namespace Controlprotocol
         IAMMASTER,
         BEMASTER,
         MEASUREMENTREQUEST,
-        MEASUREMENTRESPONSE
+        TEMPERATURE
     };
 
     typedef struct Message
@@ -38,6 +40,44 @@ namespace Controlprotocol
         Message message;
         uint8_t packetbytes[sizeof(message)];
     } MessageContainer;
+
+    void sendDataTo(IPAddress ip, Type type, String data);
+    void replyToSender(AsyncUDPPacket *packet, MessageContainer mc);
+
+    void requestTemperatureReadings()
+    {
+        for (size_t i = 0; i < NUMBEROFSENSORS; i++)
+        {
+            auto sensor = Remote::getSensor(i);
+            if (sensor->getIsActive())
+            {
+                sendDataTo(sensor->getIP(), MEASUREMENTREQUEST, "");
+            }
+        }
+        
+    }
+
+    void receiveTemperatureReadings(AsyncUDPPacket packet, char* data)
+    {
+        auto sensor = Remote::getSensor(packet.remoteIP());
+        if (sensor->getIsActive())
+        {
+            sensor->deSerializeSensorData((uint8_t *)data);
+        }
+    }
+
+    void replyToTemperatureReadingRequest(AsyncUDPPacket packet)
+    {
+        auto data = TemperaturHandler::getSensorData();
+        Remote::RemoteSensor sensor;
+        sensor.setData(data);
+        auto serialized_data = sensor.serializeSensorData();
+
+        MessageContainer mc;
+        mc.message.type = TEMPERATURE;
+        memcpy(mc.message.payload, serialized_data, sizeof(serialized_data));
+        replyToSender(&packet, mc);
+    }
 
     bool discoverOthers()
     {
@@ -58,6 +98,19 @@ namespace Controlprotocol
     {
         // reply to sender of packet
         packet->write(mc.packetbytes, sizeof(mc.packetbytes));
+    }
+
+    void sendDataTo(IPAddress ip, Type type, String data)
+    {
+        MessageContainer mc;
+        for (size_t i = 0; i < sizeof(mc.packetbytes); i++)
+        {
+            mc.packetbytes[i] = 0;
+        }
+
+        mc.message.type = type;
+        strcpy(mc.message.payload, data.c_str());
+        UDPHANDLER::sendUnicast( ip, mc.packetbytes, sizeof(mc.packetbytes));
     }
 
     void replyToDiscovery(AsyncUDPPacket *packet)
@@ -86,39 +139,46 @@ namespace Controlprotocol
         sensor->setIP(ip);
         sensor->setMaster(isMaster);
         sensor->setName(name);
+        sensor->setIsActive(true);
         currentSensorID++;
     }
 
     void dispatch(AsyncUDPPacket packet)
     {
+        //deserialize packet to message
         MessageContainer mc;
         memcpy(mc.packetbytes, packet.data(), sizeof(Message));
         Message message = mc.message;
+        
         switch (message.type)
         {
         case Type::ANYBODYTHERE:
             Serial.write("Received ANYBODYTHERE ... from ");
-            Serial.write(mc.message.payload);
-            Serial.write("\n");
             addRemoteSensor(packet.remoteIP(), false, mc.message.payload);
             replyToDiscovery(&packet);
             break;
         case Type::IAMHERE:
             Serial.write("Received IAMHERE ... from ");
-            Serial.write(mc.message.payload);
-            Serial.write("\n");
             addRemoteSensor(packet.remoteIP(), false, mc.message.payload);
         case Type::IAMMASTER:
             params.timeoutRunning = false;
             TimerHandler::delCallback2();
             Serial.write("Received IAMMASTER ... from ");
-            Serial.write(mc.message.payload);
-            Serial.write("\n");
             addRemoteSensor(packet.remoteIP(), true, mc.message.payload);
             break;
+        case Type::MEASUREMENTREQUEST:
+            replyToTemperatureReadingRequest(packet);
+            Serial.write("Received MEASUREMENTREQUEST ");
+            break;
+        case Type::TEMPERATURE:
+            receiveTemperatureReadings(packet, mc.message.payload);
+            Serial.write("Received TEMPERATURE ");
+           break;
         default:
             break;
         }
+        Serial.write(mc.message.payload);
+        Serial.write("\n");
     }
 
     void onReceivePacket(AsyncUDPPacket packet)
@@ -134,10 +194,16 @@ namespace Controlprotocol
         }
     }
 
-    void timeout()
+    void becomeMaster()
     {
         Serial.write("Becoming master \n");
+        Webserver::start();
         params.isMaster = true;
+    }
+
+    void timeout()
+    {
+        becomeMaster();
     }
 
     void timerCallback()
@@ -160,9 +226,10 @@ namespace Controlprotocol
             }
         }
     }
-    void setup()
+
+    void setup(String _name)
     {
-        params.name = "Wohnzimmer";
+        params.name = _name;
         UDPHANDLER::start();
         UDPHANDLER::setCallback(onReceivePacket);
         TimerHandler::setCallback2(timerCallback);

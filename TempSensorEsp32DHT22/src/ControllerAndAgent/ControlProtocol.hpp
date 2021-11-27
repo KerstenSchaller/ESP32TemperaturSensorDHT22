@@ -3,7 +3,7 @@
 
 namespace Controlprotocol
 {
-    void setup();
+    void setup(String _name);
     bool discoverOthers();
 }
 
