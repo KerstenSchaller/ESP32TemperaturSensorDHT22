@@ -26,13 +26,19 @@ namespace Controlprotocol
         IAMMASTER,
         BEMASTER,
         MEASUREMENTREQUEST,
-        TEMPERATURE
+        TEMPERATURE,
+        UNINITIALIZED
     };
 
     typedef struct Message
     {
         Type type;
         char payload[BUFSIZE];
+        Message()
+        {
+            type = UNINITIALIZED;
+            memset(payload,'\0', BUFSIZE);
+        }
     } Message;
 
     typedef union MessageContainer
@@ -69,17 +75,12 @@ namespace Controlprotocol
 
     void replyToTemperatureReadingRequest(AsyncUDPPacket packet)
     {
-        //auto data = TemperaturHandler::getSensorData();
-        SensorDHT22::SensorData data;
-        data.temperature = 43.23f;
+        auto data = TemperaturHandler::getSensorData();
         Remote::RemoteSensor sensor;
         sensor.setData(data);
         MessageContainer mc;
         sensor.serializeSensorData((uint8_t *)mc.message.payload);
-
-
         mc.message.type = TEMPERATURE;
-        //memcpy(mc.message.payload, serialized_data, sizeof(serialized_data));
         replyToSender(&packet, mc);
     }
 
