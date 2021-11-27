@@ -62,21 +62,30 @@ namespace Controlprotocol
         auto sensor = Remote::getSensor(packet.remoteIP());
         if (sensor->getIsActive())
         {
+
             sensor->deSerializeSensorData((uint8_t *)data);
         }
     }
 
     void replyToTemperatureReadingRequest(AsyncUDPPacket packet)
     {
-        auto data = TemperaturHandler::getSensorData();
+        //auto data = TemperaturHandler::getSensorData();
+        SensorDHT22::SensorData data;
+        data.temperature = 43.23f;
         Remote::RemoteSensor sensor;
         sensor.setData(data);
-        auto serialized_data = sensor.serializeSensorData();
-
         MessageContainer mc;
+        sensor.serializeSensorData((uint8_t *)mc.message.payload);
+
+
         mc.message.type = TEMPERATURE;
-        memcpy(mc.message.payload, serialized_data, sizeof(serialized_data));
+        //memcpy(mc.message.payload, serialized_data, sizeof(serialized_data));
         replyToSender(&packet, mc);
+    }
+
+    String getName()
+    {
+        return params.name;
     }
 
     bool discoverOthers()

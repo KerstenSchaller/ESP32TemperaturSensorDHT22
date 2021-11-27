@@ -38,8 +38,7 @@ void setup()
   TemperaturHandler::update();
   TimerHandler::setup(timerCallback);
   SystemTime::get();
-  Controlprotocol::setup("Wohnzimmer");
-
+  Controlprotocol::setup("Schlafzimmer");
   Controlprotocol::discoverOthers();
 }
   

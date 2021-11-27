@@ -4,6 +4,8 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include "TemperaturHandler.hpp"
+#include "ControllerAndAgent/RemoteSensor.hpp"
+#include "ControllerAndAgent/ControlProtocol.hpp"
 
 namespace Webserver
 {
@@ -19,9 +21,18 @@ void requestCallback(AsyncWebServerRequest *request)
     Serial.println("Received http get");
     countAttempts++;
     Serial.println("Reading from sensor attempt" + String(countAttempts));
+    Controlprotocol::requestTemperatureReadings();
+    delay(2*1000);
+    String returnText = Controlprotocol::getName() + " Temperature: " + String(TemperaturHandler::getTemperature()) + "\n";
+    for (int i = 0; i < NUMBEROFSENSORS; i++)
+    {
+        auto sensor = Remote::getSensor(i);
+        if (sensor->getIsActive())
+        {
+            returnText += sensor->getName() + " Temperature: " + String(sensor->getData().temperature) + "\n";
+        }
+    }
 
-
-    String returnText = "Temperatur: " + String(TemperaturHandler::getTemperature()) + "C   Luftfeuchte: " + String(TemperaturHandler::getHumidity());
 
     Serial.println("Answering with: " + returnText);
     requestCounter++;

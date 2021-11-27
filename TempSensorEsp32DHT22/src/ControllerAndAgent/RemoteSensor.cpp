@@ -29,5 +29,6 @@ namespace Remote
                 return &sensors[i];
             }
         }
+        return nullptr;
     }
 }

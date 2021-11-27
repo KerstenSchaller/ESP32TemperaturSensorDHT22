@@ -59,18 +59,31 @@ namespace Remote
             data = _data;
         }
 
-        uint8_t *serializeSensorData()
+        SensorDHT22::SensorData getData()
         {
-            Container container;
-            container.data = data;
-            return container.packetbytes;
+            return data;
         }
 
+        void serializeSensorData(uint8_t * _data)
+        {
+            Container container;
+            container.data = this->data;
+            memcpy(_data, container.packetbytes, sizeof(SensorDHT22::SensorData));
+            /*
+            for (int i = 0; i < sizeof(SensorDHT22::SensorData); i++)
+            {
+                _data[i] = container.packetbytes[i];
+            }*/
+        }
+        
         void deSerializeSensorData(const uint8_t* packetbytes)
         {
             Container container;
             memcpy(container.packetbytes, packetbytes, sizeof(SensorDHT22::SensorData));
-            data = container.data;
+            //data = container.data;
+            Serial.write(String(container.data.temperature).c_str() );
+            Serial.write("\n");
+            memcpy(&data, &container.data, sizeof(SensorDHT22::SensorData));
         }
     };
 
