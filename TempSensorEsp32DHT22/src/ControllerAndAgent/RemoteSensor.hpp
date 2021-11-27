@@ -9,6 +9,7 @@
 
 namespace Remote
 {
+    uint32_t calcCrc32(String input);
 
     class RemoteSensor
     {
@@ -19,11 +20,11 @@ namespace Remote
         String name = "noname";
         SensorDHT22::SensorData data;
 
-    typedef union Container
-    {
-        SensorDHT22::SensorData data;
-        uint8_t packetbytes[sizeof(SensorDHT22::SensorData)];
-    } Container;
+        typedef union Container
+        {
+            SensorDHT22::SensorData data;
+            uint8_t packetbytes[sizeof(SensorDHT22::SensorData)];
+        } Container;
 
     public:
         void setIP(AsyncUDPPacket packet)
@@ -64,33 +65,28 @@ namespace Remote
             return data;
         }
 
-        void serializeSensorData(uint8_t * _data)
+        void serializeSensorData(uint8_t *_data)
         {
             Container container;
             container.data = this->data;
             memcpy(_data, container.packetbytes, sizeof(SensorDHT22::SensorData));
-            /*
-            for (int i = 0; i < sizeof(SensorDHT22::SensorData); i++)
-            {
-                _data[i] = container.packetbytes[i];
-            }*/
         }
-        
-        void deSerializeSensorData(const uint8_t* packetbytes)
+
+        void deSerializeSensorData(const uint8_t *packetbytes)
         {
             Container container;
             memcpy(container.packetbytes, packetbytes, sizeof(SensorDHT22::SensorData));
             //data = container.data;
-            Serial.write(String(container.data.temperature).c_str() );
+            Serial.write(String(container.data.temperature).c_str());
             Serial.write("\n");
             memcpy(&data, &container.data, sizeof(SensorDHT22::SensorData));
         }
     };
 
-
     RemoteSensor *getSensor(int index);
     RemoteSensor *getSensor(IPAddress ip);
-
+    RemoteSensor *getSensor(String name);
+    RemoteSensor *getNextUninitialized();
     RemoteSensor *getMaster();
 }
 
