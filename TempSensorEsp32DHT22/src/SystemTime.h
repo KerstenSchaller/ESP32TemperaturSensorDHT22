@@ -8,6 +8,7 @@ namespace SystemTime
 {
     String getTimeString();
     tm get();
+    bool isSetUp();
 }
 
 #endif

@@ -9,7 +9,7 @@ namespace TemperaturHandler
     float getHumidity();
     float getHeatIndex();
     SensorDHT22::SensorData getSensorData();
-    void update();
+    SensorDHT22::SensorData update();
 }
 
 #endif

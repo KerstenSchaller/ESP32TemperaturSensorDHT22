@@ -20,9 +20,15 @@ namespace UDPHANDLER
         startUDP();
     }
 
+
     void sendBroadCast(uint8_t * text, int len)
     {
         audp.broadcast(text, len);
+    }
+
+    void sendBroadCast(String text)
+    {
+        sendBroadCast((uint8_t*)text.c_str(), text.length());
     }
 
     void sendUnicast(IPAddress ip, uint8_t * text, int len)

@@ -24,8 +24,9 @@ namespace TemperaturHandler
         return data;
     }
     
-    void update()
+    SensorDHT22::SensorData update()
     {
         data = sensor.readValues();
+        return data;
     }
 }

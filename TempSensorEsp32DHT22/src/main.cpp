@@ -1,30 +1,45 @@
 #include <Arduino.h>
 #include "SystemTime.h"
-#include "Webserver.hpp"
 
 #include "UDPHandler.hpp"
 #include "WifiHandler.hpp"
 #include "TemperaturHandler.hpp"
-#include "TimerHandler.hpp"
+//#include "TimerHandler.hpp"
 
-#include "ControllerAndAgent/ControlProtocol.hpp"
+//#include "ControllerAndAgent/ControlProtocol.hpp"
+#include "Deepsleep.h"
 
-//#include "Deepsleep.h"
+String name = "Wohnzimmer";
 
-void sendData()
+bool sendData()
 {
     String timeInfo = SystemTime::getTimeString();
-
-    //String text = timeInfo +  ",t," + String(TemperaturHandler::getTemperature()) + ",h," +  String(TemperaturHandler::getHumidity());
-    //UDPHANDLER::sendBroadCast(text.c_str());
-
-
+    if(timeInfo == "failure")
+    {
+        Serial.println("Getting time info failed");
+        return false;
+    }
+    String text = name + "," + timeInfo +  ",t," + String(TemperaturHandler::getTemperature()) + ",h," +  String(TemperaturHandler::getHumidity());
+    UDPHANDLER::sendBroadCast(text);
+    return true;
 }
 
 void timerCallback()
 {
-  //TemperaturHandler::update();
-  sendData();
+  auto data = TemperaturHandler::update();
+  if(data.temperatureValid)
+  {
+    bool succes = sendData();
+    if(succes)
+    {
+      Serial.println("Going to sleep");
+      Deepsleep::startSleep(5*60);
+    }
+  }
+  else
+  {
+    Serial.println("Temperature not valid");
+  }
 }
 
 void setup()
@@ -32,18 +47,28 @@ void setup()
   Serial.begin(115200);
   
   WifiHandler::ConnectWifi();
-  WifiHandler::setUpmDNS("esp32");
-  //UDPHANDLER::start();
+  //WifiHandler::setUpmDNS("esp32");
+  SystemTime::get();
+  UDPHANDLER::start();
   //Webserver::start(); // now in controlprotokol.cpp
   TemperaturHandler::update();
-  TimerHandler::setup(timerCallback);
-  SystemTime::get();
-  Controlprotocol::setup("Schlafzimmer");
-  Controlprotocol::discoverOthers();
+  //TimerHandler::setup(timerCallback);
+  
+  //Controlprotocol::setup(name);
+  //Controlprotocol::discoverOthers();
 }
   
+
 void loop()
 {
+  timerCallback();
+  if(SystemTime::isSetUp())
+  {
+  }
+  else
+  {
+    SystemTime::get();
+  }
   // must run to check for interrupts, which causes callback 
-  TimerHandler::check(); 
+  //TimerHandler::check(); 
 }

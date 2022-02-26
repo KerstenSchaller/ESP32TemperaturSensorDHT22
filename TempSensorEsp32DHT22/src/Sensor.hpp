@@ -16,9 +16,9 @@ public:
         float temperature;
         float humidity;
         float heatIndexCelsius;
-        bool temperatureValid;
-        bool humidityValid;
-        bool heatIndexValid;
+        bool temperatureValid = false;
+        bool humidityValid= false;
+        bool heatIndexValid= false;
     };
 
     SensorData readValues();

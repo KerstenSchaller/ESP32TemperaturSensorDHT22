@@ -25,7 +25,7 @@ void setup(void (*fn)())
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &onTimer, true);
   //timerAlarmWrite(timer, timeSeconds*1000*1000, true);
-  timerAlarmWrite(timer, 1*1000*1000, true);
+  timerAlarmWrite(timer, 5*1000*1000, true);
   timerAlarmEnable(timer);
   callback = fn;  
 }
